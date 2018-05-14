@@ -21,7 +21,7 @@ Currently, the services are serviceA and serviceB which are independent maven pr
 
 serviceA is currently the entry point for the sample. Once installed, the sample can be accessed at:
 ```
-http://<your kubernetes cluster>/serviceA
+http://<your kubernetes cluster>/mp-istio-sample/serviceA
 ```
 
 ### Build
@@ -70,7 +70,7 @@ The sample services are installed into your cluster using the deployment yaml in
 
 You now have the sample installed in your cluster. The entrypoint for the sample is:
 ```
-http://<your kubernetes cluster>/serviceA
+http://<your kubernetes cluster>/mp-istio-sample/serviceA
 ```
 The result should look something like
 ```

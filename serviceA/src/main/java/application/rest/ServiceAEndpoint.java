@@ -1,5 +1,7 @@
 package application.rest;
 
+import java.util.Date;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -13,46 +15,39 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 
-@Path("/")
 @RequestScoped
-public class ServiceAEndpoint extends Application {
+@Path("serviceA")
+public class ServiceAEndpoint {
 
     @Inject
-    @ConfigProperty(name = "SERVICEB_HOST", defaultValue = "serviceB-service")
+    @ConfigProperty(name = "svcBHost", defaultValue = "localhost")
     private String serviceBHost;
 
     @Inject
-    @ConfigProperty(name = "SERVICEB_SERVICE_SERVICE_PORT", defaultValue = "9080")
+    @ConfigProperty(name = "svcBPort", defaultValue = "9080")
     private String serviceBPort;
 
-    @Inject
-    @ConfigProperty(name = "prop1", defaultValue = "def1")
-    private String prop1;
-
-    @Inject
-    @ConfigProperty(name = "prop2", defaultValue = "def2")
-    private String prop2;
+    StringBuilder url;
+    static int callCount;
 
     @GET
-    @Path("/serviceA")
     @Retry
     @Fallback(fallbackMethod="serviceAFallback")
     @Produces(MediaType.TEXT_PLAIN)
     public String callServiceB() {
-        StringBuilder url = new StringBuilder();
-        
-        url.append("http://")
-            .append(serviceBHost)
-            .append(":")
-            .append(serviceBPort)
-            .append("/serviceB");
+      url = new StringBuilder();
+      url.append("http://")
+          .append(serviceBHost)
+          .append(":")
+          .append(serviceBPort)
+          .append("/mp-istio-sample/serviceB");
 
-        return "Hello from serviceA\n" + callService(url) + formatConfigProperties();
+      return "Hello from serviceA\n" + callService(url);
     }
 
     public String serviceAFallback() {
 
-        return "Hello from serviceAFallback\n" + formatConfigProperties();
+        return "Hello from serviceAFallback at " + new Date() + " (ServiceA call count: " + callCount + ")\nCompletely failed to call " + url;
     }
 
     private String callService(StringBuilder url) {
@@ -60,20 +55,27 @@ public class ServiceAEndpoint extends Application {
         StringBuilder sb = new StringBuilder();
 
         sb.append("Calling service at: ")
-            .append(url);
+            .append(url)
+            .append(" (ServiceA call count: " + ++callCount)
+            .append(")");
 
         System.out.println(sb.toString());
 
-        sb.append("\n")
-            .append(ClientBuilder.newClient()
-                              .target(url.toString())
-                              .request(MediaType.TEXT_PLAIN)
-                              .get(String.class));
+        sb.append("\n");
 
-        return sb.toString();
-    }
+        String result = null;
+        
+        try {
+          result = ClientBuilder.newClient()
+                            .target(url.toString())
+                            .request(MediaType.TEXT_PLAIN)
+                            .get(String.class);
+        } catch (Exception e) {
+          System.out.println("Caught exception");
+          e.printStackTrace();
+          throw e;
+        }
 
-    private String formatConfigProperties() {
-      return "\nprop1=" + prop1 + "\nprop2=" + prop2 + "\n";
+        return sb.append(result).toString();
     }
 }

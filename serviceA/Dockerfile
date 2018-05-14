@@ -12,3 +12,4 @@ RUN \
     && java -jar /tmp/license.jar -acceptLicense /opt/ibm \
     && rm /tmp/license.jar; \
   fi
+RUN apt-get update -y && apt-get install -y curl

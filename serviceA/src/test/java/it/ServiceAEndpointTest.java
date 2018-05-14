@@ -15,7 +15,7 @@ public class ServiceAEndpointTest {
     @Test
     public void testDeployment() {
         try {
-          testEndpoint("/serviceA", 200, "serviceAFallback");
+          testEndpoint("/mp-istio-sample/serviceA", 200, "serviceAFallback");
         } catch (Exception e) {
           e.printStackTrace();
         }

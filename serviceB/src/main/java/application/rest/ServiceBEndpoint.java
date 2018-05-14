@@ -9,16 +9,21 @@ import javax.ws.rs.Path;
 @Path("serviceB")
 public class ServiceBEndpoint {
 
-    @GET
-    public String hello() {
-        String hostname;
+  static int callCount = 0;
 
-        try {
-            hostname = InetAddress.getLocalHost().getHostName();
-        } catch(java.net.UnknownHostException e) {
-            hostname = e.getMessage();
-        }
-        return "Hello from serviceB at " + new Date() + " on " + hostname;
-    }
+  @GET
+  public String hello() throws Exception {
+      String hostname;
 
+      if (++callCount % 5 != 0) {
+        throw new Exception();
+      }
+
+      try {
+          hostname = InetAddress.getLocalHost().getHostName();
+      } catch(java.net.UnknownHostException e) {
+          hostname = e.getMessage();
+      }
+      return "Hello from serviceB at " + new Date() + " on " + hostname + " (ServiceB call count: " + callCount + ")";
+  }
 }

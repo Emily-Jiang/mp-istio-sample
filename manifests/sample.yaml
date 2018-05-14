@@ -24,28 +24,13 @@ spec:
     spec:
       containers:
       - name: servicea
-        image: SERVICE_TAG_A:latest
+        image: jonhawkes/mp-istio-sample-servicea:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 9080
         envFrom:
         - configMapRef:
             name: mp-istio-sample-config
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: ingress
-  annotations:
-    kubernetes.io/ingress.class: "istio"
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /serviceA
-        backend:
-          serviceName: servicea-service
-          servicePort: 9080
 ---
 apiVersion: v1
 kind: Service
@@ -71,7 +56,7 @@ spec:
     spec:
       containers:
       - name: serviceb
-        image: SERVICE_TAG_B:latest
+        image: jonhawkes/mp-istio-sample-serviceb:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 9080
@@ -82,5 +67,7 @@ metadata:
   name: mp-istio-sample-config
   namespace: default
 data:
-  prop1: val1
-  prop2: val2
+  svcBHost: serviceb-service
+  svcBPort: "9080"
+  health: up
+  MP_Fault_Tolerance_NonFallback_Enabled: "false"

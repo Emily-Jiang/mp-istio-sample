@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: mp-istio-sample-ingress
+  annotations:
+    kubernetes.io/ingress.class: "istio"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /mp-istio-sample/serviceB
+        backend:
+          serviceName: serviceb-service
+          servicePort: 9080
+      - path: /mp-istio-sample/serviceA
+        backend:
+          serviceName: servicea-service
+          servicePort: 9080
+      - path: /health
+        backend:
+          serviceName: servicea-service
+          servicePort: 9080
