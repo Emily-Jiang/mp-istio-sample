@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: servicea-service
+  labels:
+    app: servicea
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: servicea
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: servicea-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: servicea
+    spec:
+      containers:
+      - name: servicea
+        image: jonhawkes/mp-istio-sample-servicea:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9080
+        envFrom:
+        - configMapRef:
+            name: mp-istio-sample-config
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:9080/health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serviceb-service
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: serviceb
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: serviceb-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: serviceb
+    spec:
+      containers:
+      - name: serviceb
+        image: jonhawkes/mp-istio-sample-serviceb:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mp-istio-sample-config
+  namespace: default
+data:
+  svcBHost: serviceb-service
+  svcBPort: "9080"
+  health: up
+  MP_Fault_Tolerance_NonFallback_Enabled: "false"
