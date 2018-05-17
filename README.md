@@ -64,7 +64,7 @@ https://istio.io/docs/setup/kubernetes/quick-start.html
 The sample services are installed into your cluster using the deployment yaml in the manifests directory. The yaml is preprocessed by istioctl and applied using kubectl.
 1.  Edit manifests/sample.yaml, replacing SERVICE_TAG_A with the tag you used when you pushed servicea to Docker Hub e.g. `<docker id>`/mp-istio-sample-servicea
 2.  Edit manifests/sample.yaml, replacing SERVICE_TAG_B with the tag you used when you pushed serviceb to Docker Hub e.g. `<docker id>`/mp-istio-sample-serviceb
-3.  kubectl apply -f <(istioctl kube-inject --debug -f manifests/sample.yaml)
+3.  kubectl apply -f <(istioctl kube-inject --debug -f manifests/istio-sample.yaml)
 
 ### Run the Sample
 
@@ -72,22 +72,30 @@ You now have the sample installed in your cluster. The entrypoint for the sample
 ```
 http://<your kubernetes cluster>/mp-istio-sample/serviceA
 ```
-The result should look something like
+The result should look something like:
 ```
 Hello from serviceA
-Calling service at: http://serviceB-service:9080/serviceB
-Hello from serviceB at Tue May 01 10:42:56 UTC 2018 on serviceb-deployment-8569dd785d-sfcwj
+Calling service at: http://serviceb-service:9080/mp-istio-sample/serviceB (ServiceA call count: 5, tries: 1)
+Hello from serviceB at Thu May 17 14:28:08 UTC 2018 on serviceb-deployment-57bbdcf656-9ntwq (ServiceB call count: 19, succeedFrequency: 0)
 ```
-This shows that serviceA has successfully called serviceB.
+or
+```
+Hello from serviceAFallback at Thu May 17 14:29:07 UTC 2018 (ServiceA call count: 22)
+Completely failed to call http://serviceb-service:9080/mp-istio-sample/serviceB after 4 tries
+```
+This shows that serviceA is working and has tried to communicate with serviceB. Sometimes this falls back depending on the current code in serviceB and whether Istio traffic management has already been applied.
 
 ### Inject Faults to Provoke Fault Tolerance Behavior
+
+**ServiceB is currently coded to succeed only every nth time it's called - where n is the succeedFrequency property in the serviceA configmap**
 
 Delays and faults can be injected into the service calls to test the fault tolerant behavior of the application. A sample Istio routing rule is provided which will cause 75% of calls to serviceB to fail. The sample routing rule can be installed with this command
 
     kubectl create -f manifests/fault-injection.yaml
 
-You can experiment with the percentage to provoke different fault tolerance behavior. For example, a percentage of 100 will cause the fallback method of serviceA to be invoked every time and the result will always be
+You can experiment with the percentage to provoke different fault tolerance behavior. For example, a percentage of 100 will cause the fallback method of serviceA to be invoked every time and the result will always be similar to:
 ```
-Hello from serviceAFallback
+Hello from serviceAFallback at Thu May 17 14:29:07 UTC 2018 (ServiceA call count: 22)
+Completely failed to call http://serviceb-service:9080/mp-istio-sample/serviceB after 4 tries
 ```
 The percentage can be modified by editing fault-injection.yaml and re-running the kubectl command above to update the routing rule.

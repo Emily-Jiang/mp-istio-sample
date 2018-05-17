@@ -1,24 +1,35 @@
 package application.rest;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-@Path("health")
-public class HealthEndpoint {
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.health.Health;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response healthcheck() {
-      /*
-      if (!healthy) {
-        return Response.status(503).entity("{\"status\":\"DOWN\"}").build();
-      }
-      */
-      return Response.ok("{\"status\":\"UP\"}").build();
+@Health
+@ApplicationScoped
+public class HealthEndpoint implements HealthCheck {
+  @Inject
+  @ConfigProperty(name = "health", defaultValue = "health config prop not available")
+  private String health;
+
+  @Override
+  public HealthCheckResponse call() {
+    HealthCheckResponse hcr;
+
+    if ("up".equals(health)) {
+      hcr = HealthCheckResponse.named("serviceB")
+                                .withData("health", health)
+                                .up().build();
+    } else {
+      hcr = HealthCheckResponse.named("serviceB")
+                                .withData("health", health)
+                                .down().build();
     }
 
+    System.out.println("Health endpoint called: " + hcr);
+    return hcr;
+  }
 }

@@ -10,7 +10,7 @@
     <parent>
         <groupId>net.wasdev.wlp.maven.parent</groupId>
         <artifactId>liberty-maven-app-parent</artifactId>
-        <version>2.1.2</version>
+        <version>2.2</version>
     </parent>
 
     <properties>
@@ -25,6 +25,10 @@
         <warContext>${app.name}</warContext>
         <package.file>${project.build.directory}/${project.artifactId}-${project.version}.zip</package.file>
         <packaging.type>usr</packaging.type>
+        <!-- Plugins -->
+        <version.liberty-maven-plugin>2.2</version.liberty-maven-plugin>
+        <!-- OpenLiberty runtime -->
+        <version.openliberty-runtime>RELEASE</version.openliberty-runtime>
     </properties>
 
     <dependencies>
@@ -47,28 +51,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.0.1</version>
+            <groupId>org.eclipse.microprofile</groupId>
+            <artifactId>microprofile</artifactId>
+            <version>1.3</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.ibm.websphere.appserver.api</groupId>
-            <artifactId>com.ibm.websphere.appserver.api.jaxrs20</artifactId>
-            <version>1.0.18</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.ibm.websphere.appserver.api</groupId>
-            <artifactId>com.ibm.websphere.appserver.api.json</artifactId>
-            <version>1.0.18</version>
-            <scope>provided</scope>
+            <type>pom</type>
         </dependency>
     </dependencies>
 
@@ -105,11 +92,12 @@
             <plugin>
                 <groupId>net.wasdev.wlp.maven.plugins</groupId>
                 <artifactId>liberty-maven-plugin</artifactId>
+                <version>${version.liberty-maven-plugin}</version>
                 <configuration>
                     <assemblyArtifact>
-                        <groupId>com.ibm.websphere.appserver.runtime</groupId>
-                        <artifactId>wlp-webProfile7</artifactId>
-                        <version>17.0.0.4</version>
+                        <groupId>io.openliberty</groupId>
+                        <artifactId>openliberty-runtime</artifactId>
+                        <version>${version.openliberty-runtime}</version>
                         <type>zip</type>
                     </assemblyArtifact>
                     <configFile>${basedir}/src/main/liberty/config/server.xml</configFile>
@@ -122,9 +110,6 @@
                         <default.http.port>${testServerHttpPort}</default.http.port>
                         <default.https.port>${testServerHttpsPort}</default.https.port>
                     </bootstrapProperties>
-                    <features>
-                        <acceptLicense>true</acceptLicense>
-                    </features>
                     <looseApplication>false</looseApplication>
                 </configuration>
             </plugin>

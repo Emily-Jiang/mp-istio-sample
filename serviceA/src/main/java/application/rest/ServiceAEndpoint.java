@@ -29,12 +29,14 @@ public class ServiceAEndpoint {
 
     StringBuilder url;
     static int callCount;
+    int tries;
 
     @GET
     @Retry
     @Fallback(fallbackMethod="serviceAFallback")
     @Produces(MediaType.TEXT_PLAIN)
     public String callServiceB() {
+
       url = new StringBuilder();
       url.append("http://")
           .append(serviceBHost)
@@ -47,16 +49,17 @@ public class ServiceAEndpoint {
 
     public String serviceAFallback() {
 
-        return "Hello from serviceAFallback at " + new Date() + " (ServiceA call count: " + callCount + ")\nCompletely failed to call " + url;
+        return "Hello from serviceAFallback at " + new Date() + " (ServiceA call count: " + callCount + ")\nCompletely failed to call " + url + " after " + tries + " tries";
     }
 
     private String callService(StringBuilder url) {
+      tries++;
 
         StringBuilder sb = new StringBuilder();
 
         sb.append("Calling service at: ")
             .append(url)
-            .append(" (ServiceA call count: " + ++callCount)
+            .append(" (ServiceA call count: " + ++callCount + ", tries: " + tries)
             .append(")");
 
         System.out.println(sb.toString());

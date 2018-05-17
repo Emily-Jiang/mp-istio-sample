@@ -7,5 +7,5 @@ spec:
     name: serviceb-service
   httpFault:
     abort:
-      percent: 10
+      percent: 75
       httpStatus: 400
