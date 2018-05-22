@@ -37,6 +37,9 @@ public class ServiceAEndpoint {
     @Produces(MediaType.TEXT_PLAIN)
     public String callServiceB() {
 
+      ++callCount;
+      ++tries;
+
       url = new StringBuilder();
       url.append("http://")
           .append(serviceBHost)
@@ -44,7 +47,7 @@ public class ServiceAEndpoint {
           .append(serviceBPort)
           .append("/mp-istio-sample/serviceB");
 
-      return "Hello from serviceA\n" + callService(url);
+      return "Hello from serviceA (" + this + ")\n" + callService(url);
     }
 
     public String serviceAFallback() {
@@ -53,13 +56,12 @@ public class ServiceAEndpoint {
     }
 
     private String callService(StringBuilder url) {
-      tries++;
 
         StringBuilder sb = new StringBuilder();
 
         sb.append("Calling service at: ")
             .append(url)
-            .append(" (ServiceA call count: " + ++callCount + ", tries: " + tries)
+            .append(" (ServiceA call count: " + callCount + ", tries: " + tries)
             .append(")");
 
         System.out.println(sb.toString());

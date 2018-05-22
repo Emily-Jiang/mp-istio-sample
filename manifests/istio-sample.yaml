@@ -30,14 +30,14 @@ spec:
         - containerPort: 9080
         envFrom:
         - configMapRef:
-            name: mp-istio-sample-config
-        readinessProbe:
+            name: mp-istio-sample-servicea-config
+        livenessProbe:
           exec:
             command:
             - curl
             - -f
             - http://localhost:9080/health
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
           periodSeconds: 10
 ---
 apiVersion: v1
@@ -71,25 +71,26 @@ spec:
         envFrom:
         - configMapRef:
             name: mp-istio-sample-serviceb-config
-        readinessProbe:
+        livenessProbe:
           exec:
             command:
             - curl
             - -f
             - http://localhost:9080/health
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
           periodSeconds: 10
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mp-istio-sample-config
+  name: mp-istio-sample-servicea-config
   namespace: default
 data:
   svcBHost: serviceb-service
   svcBPort: "9080"
-  health: up
-  MP_Fault_Tolerance_NonFallback_Enabled: "false"
+  lifetime: "0"
+  failFrequency: "0"
+  MP_Fault_Tolerance_NonFallback_Enabled: "true"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -97,8 +98,8 @@ metadata:
   name: mp-istio-sample-serviceb-config
   namespace: default
 data:
-  health: up
-  succeedFrequency: "0"
+  lifetime: "120"
+  failFrequency: "10"
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

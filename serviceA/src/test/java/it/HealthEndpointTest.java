@@ -6,6 +6,6 @@ public class HealthEndpointTest extends EndpointTest {
 
     @Test
     public void testHealth() {
-        testEndpoint("/health", 503, "");
+        testEndpoint("/health", 200, "UP");
     }
 }

@@ -58,6 +58,10 @@ Ensure that Istio is installed in your cluster and istioctl is on your path. Fol
 ```
 https://istio.io/docs/setup/kubernetes/quick-start.html
 ```
+If you want to view distributed trace, install the zipkin provided with Istio.
+```
+https://istio.io/docs/tasks/telemetry/distributed-tracing.html
+```
 
 ### Install the Sample Services
 
@@ -76,7 +80,7 @@ The result should look something like:
 ```
 Hello from serviceA
 Calling service at: http://serviceb-service:9080/mp-istio-sample/serviceB (ServiceA call count: 5, tries: 1)
-Hello from serviceB at Thu May 17 14:28:08 UTC 2018 on serviceb-deployment-57bbdcf656-9ntwq (ServiceB call count: 19, succeedFrequency: 0)
+Hello from serviceB at Thu May 17 14:28:08 UTC 2018 on serviceb-deployment-57bbdcf656-9ntwq (ServiceB call count: 19, failFrequency: 0)
 ```
 or
 ```
@@ -87,11 +91,15 @@ This shows that serviceA is working and has tried to communicate with serviceB. 
 
 ### Inject Faults to Provoke Fault Tolerance Behavior
 
-**ServiceB is currently coded to succeed only every nth time it's called - where n is the succeedFrequency property in the serviceA configmap**
+**ServiceB can be configured to succeed only every nth time it's called - where n is the failFrequency property in the serviceB configmap**
 
 Delays and faults can be injected into the service calls to test the fault tolerant behavior of the application. A sample Istio routing rule is provided which will cause 75% of calls to serviceB to fail. The sample routing rule can be installed with this command
 
     kubectl create -f manifests/fault-injection.yaml
+
+and deleted with:
+
+    kubectl delete -f manifests/fault-injection.yaml
 
 You can experiment with the percentage to provoke different fault tolerance behavior. For example, a percentage of 100 will cause the fallback method of serviceA to be invoked every time and the result will always be similar to:
 ```
@@ -99,3 +107,9 @@ Hello from serviceAFallback at Thu May 17 14:29:07 UTC 2018 (ServiceA call count
 Completely failed to call http://serviceb-service:9080/mp-istio-sample/serviceB after 4 tries
 ```
 The percentage can be modified by editing fault-injection.yaml and re-running the kubectl command above to update the routing rule.
+
+### Uninstall the Sample Services
+
+You can uninstall the sample services with the following command.
+
+1.  kubectl apply -f <(istioctl kube-inject --debug -f manifests/istio-sample.yaml)

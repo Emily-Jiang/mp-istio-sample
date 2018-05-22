@@ -11,25 +11,27 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.faulttolerance.Retry;
 
 @Path("serviceB")
 @RequestScoped
 public class ServiceBEndpoint {
 
   @Inject
-  @ConfigProperty(name = "succeedFrequency", defaultValue = "0")
-  private int succeedFrequency;
+  @ConfigProperty(name = "failFrequency", defaultValue = "0")
+  private int failFrequency;
 
-  static int callCount = 0;
+  private static int callCount;
 
   @GET
+  @Retry
   public String hello() throws Exception {
     String hostname;
 
     ++callCount;
 
-    if (succeedFrequency > 0 && callCount % succeedFrequency != 0) {
-      throw new Exception("ServiceB deliberately caused to fail. SucceedFrequency is " + succeedFrequency);
+    if (failFrequency > 0 && callCount % failFrequency == 0) {
+      throw new Exception("ServiceB deliberately caused to fail. Call count: " + callCount + ", failFrequency: " + failFrequency);
     }
 
     try {
@@ -38,6 +40,6 @@ public class ServiceBEndpoint {
       hostname = e.getMessage();
     }
 
-    return "Hello from serviceB at " + new Date() + " on " + hostname + " (ServiceB call count: " + callCount + ", succeedFrequency: " + succeedFrequency + ")";
+    return "Hello from serviceB (" + this + ") at " + new Date() + " on " + hostname + " (ServiceB call count: " + callCount + ", failFrequency: " + failFrequency + ")";
   }
 }
